@@ -1,70 +1,46 @@
 import { component$ } from "@builder.io/qwik";
 import { routeLoader$ } from "@builder.io/qwik-city";
-
-// // [
-//  {
-//     "cancelled": false,
-//     "checkInDate": "2024-05-31",
-//     "checkOutDate": "2024-06-01",
-//     "currencyCode": "USD",
-//     "hotelName": "Luxor",
-//     "id": 7,
-//     "occupancy": 1,
-//     "paid": true,
-//     "total": 90928
-//   },...
-// ]
-//   cancelled     true or false, indicates if the booking has been cancelled
-//   checkInDate   stay arrival
-//   checkOutDate  stay departure
-//   currencyCode  currency the hotel charges in 
-//   hotelName     display name of the property
-//   id            db id of the booking
-//   occupancy     adult guests in stay
-//   paid          true or false, indicates if the booking has been paid in full
-//   total         cost of booking in smallest units (e.g. cents for USD)
-
-// 1. List all the bookings. 
-// 2. Format the total appropriately, it is in the lowest unit of the currency code (e.g. cents in the above data).
-// 3. A booking can be cancelled, fully paid, both or neither. Indicate this status in a way that makes sense.
-// 4. Include the length of the stay for each booking (e.g. 1 night in the above case)
-// 5. Include a link to /bookings/<id>
-
-interface Booking {
-    cancelled: boolean;
-    checkInDate: string;
-    checkOutDate: string;
-    currencyCode: string;
-    hotelName: string;
-    id: number;
-    occupancy: number;
-    paid: boolean;
-    total: number;
-}
+import { Bookings } from "~/components/Bookings";
+import type { Booking } from "~/interfaces";
 
 export const useBookings = routeLoader$(async (requestEvent) => {
+    const headers = {
+        "x-api-key": requestEvent.env.get('API_KEY') as string
+    };
+
     try {
         const response = await fetch(`${requestEvent.env.get('API_URL')}`,{
-            headers: {
-                "x-api-key": requestEvent.env.get('API_KEY')
-            }
+            headers: new Headers(headers)
         });
         const bookings = await response.json() as Booking[];
-        // console.log(bookings);
         return bookings;
-    } catch (error) {
-        console.log(error);
+    } catch (e:any) {
+        return;
     }
-   
-    
 })
 
 export default component$(() => {
     const bookings = useBookings();
 
-    return(
-        <>
-            <p>hi</p>
-        </>
+    return (
+        <div class="mt-12 mb-8 px-4 xl:px-12 w-screen">
+            <div class="mb-6 flex flex-row justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">Bookings</h1>
+                    <p>{bookings.value?.length} total</p>
+                </div>
+                <div class="hidden md:flex flex-row justify-between text-center">
+                    <div class="mr-4">
+                        <p class="text-3xl font-bold ">87</p>
+                        <p>Active</p>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-3xl font-bold">13</p>
+                        <p>Cancelled</p>
+                    </div>
+                </div>
+            </div>
+            <Bookings bookings={bookings.value}/>
+        </div>
     )
 })

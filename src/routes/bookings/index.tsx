@@ -3,6 +3,7 @@ import { routeLoader$ } from "@builder.io/qwik-city";
 import { Bookings } from "~/components/Bookings";
 import type { Booking } from "~/interfaces";
 
+// Fetch a list of bookings with their minor details
 export const useBookings = routeLoader$(async (requestEvent) => {
     const headers = {
         "x-api-key": requestEvent.env.get('API_KEY') as string

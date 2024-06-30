@@ -3,7 +3,6 @@ import { useNavigate } from "@builder.io/qwik-city";
 import { LuCheck, LuX } from "@qwikest/icons/lucide";
 import type { Booking } from "~/interfaces";
 
-// TODO: um optimize this?
 interface Props {
     bookings: Booking[] | undefined;
 }
@@ -21,7 +20,7 @@ export const Bookings = component$<Props>(({bookings}) => {
     ];
     const nav = useNavigate();
 
-    return(
+    return (
         <>
             <table class="w-full">
                 <thead class="border-t border-b text-gray-400">

@@ -3,8 +3,10 @@ import { routeLoader$ } from "@builder.io/qwik-city";
 import { LuMail } from "@qwikest/icons/lucide";
 import type { BookingDetails } from "~/interfaces";
 
+// Fetch the details for a specific booking
 export const useBooking = routeLoader$(async (requestEvent) => {
-    const id = requestEvent.params.id;
+    // booking ID provided by URL params 
+    const id = requestEvent.params.id; 
     const headers = {
         "x-api-key": requestEvent.env.get('API_KEY') as string
     };
@@ -14,7 +16,7 @@ export const useBooking = routeLoader$(async (requestEvent) => {
             headers: new Headers(headers)
         })
         const data = await response.json();
-        if(data.message === 'Not Found' ) return;
+        if(data.message === 'Not Found') return;
         const booking = data as BookingDetails;
         return booking;
     }

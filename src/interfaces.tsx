@@ -1,3 +1,4 @@
+// A basic booking interface for a list of bookings 
 export interface Booking {
     cancelled: boolean;
     checkInDate: string;
@@ -10,6 +11,7 @@ export interface Booking {
     total: number;
 }
 
+// A specific booking interface complete with all booking details
 export interface BookingDetails {
     cancelledAt: string | null;
     checkInDate: string; 
@@ -28,6 +30,7 @@ export interface BookingDetails {
 
 }
 
+// A customer interface for customer information and associated bookings
 export interface Customer {
     bookingIds: number[];
     email: string;

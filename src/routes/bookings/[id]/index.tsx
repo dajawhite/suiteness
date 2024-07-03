@@ -1,5 +1,5 @@
-import { component$ } from "@builder.io/qwik";
-import { routeLoader$ } from "@builder.io/qwik-city";
+import { $, component$, useSignal } from "@builder.io/qwik";
+import { routeLoader$, server$ } from "@builder.io/qwik-city";
 import { LuMail } from "@qwikest/icons/lucide";
 import type { BookingDetails } from "~/interfaces";
 
@@ -25,6 +25,40 @@ export const useBooking = routeLoader$(async (requestEvent) => {
     }
 })
 
+type cancelBookingResponse = {okay:true} | {okay:false, message: string};
+
+export const cancelBooking = server$(
+    async function(id:number, notes:string):Promise<cancelBookingResponse> {
+    const apiKey = this.env.get(`API_KEY`);
+    let apiUrl = this.env.get(`API_URL`);
+    apiUrl = apiUrl + `/${id}/cancellations`;
+    const headers = {
+        "x-api-key": apiKey as string
+    };
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'PUT',
+            headers: new Headers(headers),
+            body: JSON.stringify({
+                "notes": notes
+            })
+        })
+        const message = await response.json();
+        if(response.status === 200){
+            return {okay:true};
+        }
+        else{
+            return {okay:false, message:message};
+        }
+    }
+    catch(e){
+        console.log(e);
+        return {okay:false, message:"System error"};
+    }
+    // return {id, notes};
+})
+
 export default component$(() => {
     const booking = useBooking().value;
     const checkInDate = new Date(booking?.checkInDate as string);
@@ -35,6 +69,9 @@ export default component$(() => {
     const updatedDate = new Date(booking?.updatedAt as string);
     const stayDuration = (checkOutDate.getTime() - checkInDate.getTime()) / (1000*60*60*24);
     const totalCost = ((booking?.total as number) * 0.01).toFixed(2); 
+
+    const showCancel = useSignal(false);
+    const cancelNotes = useSignal('');
     
     return (
         <div class="mt-12 mb-8 px-6 lg:px-12 w-screen overflow-y-hidden">
@@ -45,6 +82,26 @@ export default component$(() => {
                         <p class={`mb-2 font-medium ${booking.cancelledAt ? "text-red-600" : "text-green-600"}`}>
                             {booking.cancelledAt ? `Cancelled on ${cancelledDate.toLocaleDateString()}` : "Active"}
                         </p>
+                        <div>
+                        {!booking.cancelledAt && !showCancel.value ? <button onClick$={() => {showCancel.value = true}} class="rounded-md border">Cancel this booking</button> : ''}
+                        {showCancel.value ? 
+                        <div>
+                            <input bind:value={cancelNotes} type="text" value={cancelNotes.value}></input>
+                            <button onClick$={$(async () => {
+                                console.log(cancelNotes.value)
+                                 const response = await cancelBooking(booking.id, cancelNotes.value);
+                                 if(response.okay){
+                                    console.log(response.okay)
+                                 }
+                                 else{
+                                    console.log(response.m)
+                                 }
+                                 console.log(response); 
+                                })}>Confirm Cancellation</button>
+                            <button onClick$={() => {showCancel.value = false}}>Do Not Cancel</button>
+                        </div> : ''}
+                        </div>
+                        
                         <div class="flex flex-col xl:flex-row gap-y-2 xl:gap-x-4 mb-4">
                             <p>Check-in: {checkInDate.toLocaleDateString()}</p>
                             <p>Check-out: {checkOutDate.toLocaleDateString()}</p>
